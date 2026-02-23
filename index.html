@@ -97,7 +97,7 @@ function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
 }
 
-async function append(role, text, saveFlag=true) {
+function append(role, text, saveFlag=true) {
 
   const div = document.createElement("div");
   div.className = "msg " + (role === "user" ? "me" : "bot");
@@ -106,21 +106,11 @@ async function append(role, text, saveFlag=true) {
   document.getElementById("log").appendChild(div);
 
   if (saveFlag) {
-
     messages.push({role, content:text});
-
     save();
-
-    try {
-      await saveCloud(messages);
-    } catch(e) {
-      console.error("Cloud save error:", e);
-    }
-
   }
 
   document.getElementById("log").scrollTop = 999999;
-}
 }
 
 async function send() {
@@ -130,7 +120,7 @@ async function send() {
 
   if (!text) return;
 
-  await append("user", text);
+  append("user", text);
 
   input.value = "";
 
@@ -146,7 +136,7 @@ async function send() {
 
   const data = await res.json();
 
-  await append("assistant", data.reply);
+  append("assistant", data.reply);
 
 }
 
@@ -197,86 +187,6 @@ function importLog() {
 }
   
 </script>
-<!--
-<script type="module">
 
-import { initializeApp } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc
-} from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCqF7iPmI6VMbC-AsJZgY-8fFLMfJAtlRg",
-  authDomain: "haru-chat-b1718.firebaseapp.com",
-  projectId: "haru-chat-b1718",
-  storageBucket: "haru-chat-b1718.firebasestorage.app",
-  messagingSenderId: "378629883584",
-  appId: "1:378629883584:web:c430e4cc6e2de4c03bcf25"
-};
-
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-
-const CLOUD_KEY = "haru_chat_cloud";
-
-
-async function saveCloud(messages) {
-  await setDoc(doc(db, "logs", CLOUD_KEY), {
-    messages: messages
-  });
-}
-
-
-async function loadCloud() {
-
-  try {
-
-    const snap =
-      await getDoc(doc(db, "logs", CLOUD_KEY));
-
-    if (snap.exists()) {
-
-      messages = snap.data().messages || [];
-
-      document.getElementById("log").innerHTML = "";
-
-      messages.forEach(m => {
-        append(m.role, m.content, false);
-      });
-
-      save();
-
-    }
-
-  } catch(e) {
-
-    console.error("Cloud load failed:", e);
-
-  }
-
-}
-
-
-window.addEventListener("load", loadCloud);
-
-
-</script>
--->
 </body>
 </html>
-
-
-
-
-
-
-
