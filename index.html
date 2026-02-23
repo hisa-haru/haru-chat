@@ -151,6 +151,33 @@ async function send() {
 
 load();
 
+// サーバから最新ログ取得
+fetch("/api/chat", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    messages: []
+  })
+})
+.then(r => r.json())
+.then(data => {
+  if (data.messages) {
+    messages = data.messages;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(messages)
+    );
+
+    document.getElementById("log").innerHTML = "";
+
+    messages.forEach(m =>
+      append(m.role, m.content, false)
+    );
+  }
+});
+
 function exportLog() {
 
   const data = localStorage.getItem(STORAGE_KEY);
@@ -199,6 +226,7 @@ function importLog() {
   
 </body>
 </html>
+
 
 
 
