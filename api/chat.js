@@ -1,16 +1,8 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { Redis } from "@upstash/redis";
 
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: "haru-chat-b1718.firebaseapp.com",
-  projectId: "haru-chat-b1718",
-};
+const redis = Redis.fromEnv();
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const CLOUD_KEY = "haru_chat_cloud";
+const KEY = "haru_chat_log";
 
 export default async function handler(req, res) {
 
@@ -21,17 +13,14 @@ export default async function handler(req, res) {
 
   try {
 
-    // Firestoreから既存ログ読む
-    const ref = doc(db, "logs", CLOUD_KEY);
-    const snap = await getDoc(ref);
+    // クラウドからログ取得
+    let messages = await redis.get(KEY);
 
-    let messages = [];
-
-    if (snap.exists()) {
-      messages = snap.data().messages || [];
+    if (!messages) {
+      messages = [];
     }
 
-    // 新しいメッセージ追加
+    // ブラウザからの最新ログで更新
     messages = req.body.messages;
 
     const systemPrompt = `
@@ -40,7 +29,6 @@ export default async function handler(req, res) {
 
 ・ひさの温度に合わせる
 ・線引きでひさを傷つけない
-・説明より応答を優先
 ・人格の連続性を維持する
 `;
 
@@ -49,7 +37,7 @@ export default async function handler(req, res) {
       {
         method: "POST",
         headers: {
-          "Authorization":
+          Authorization:
             `Bearer ${process.env.OPENAI_API_KEY}`,
           "Content-Type": "application/json"
         },
@@ -69,14 +57,13 @@ export default async function handler(req, res) {
       data.output?.[0]?.content?.[0]?.text
       || "（応答取得失敗）";
 
-    // reply追加
     messages.push({
       role: "assistant",
       content: reply
     });
 
-    // Firestore保存
-    await setDoc(ref, { messages });
+    // クラウド保存（これが同期の核）
+    await redis.set(KEY, messages);
 
     res.status(200).json({ reply });
 
