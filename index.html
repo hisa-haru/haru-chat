@@ -237,20 +237,28 @@ async function saveCloud(messages) {
 
 async function loadCloud() {
 
-  const snap =
-    await getDoc(doc(db, "logs", CLOUD_KEY));
+  try {
 
-  if (snap.exists()) {
+    const snap =
+      await getDoc(doc(db, "logs", CLOUD_KEY));
 
-    const data = snap.data().messages;
+    if (snap.exists()) {
 
-    messages = data;
+      messages = snap.data().messages || [];
 
-    document.getElementById("log").innerHTML = "";
+      document.getElementById("log").innerHTML = "";
 
-    messages.forEach(m =>
-      append(m.role, m.content, false)
-    );
+      messages.forEach(m => {
+        append(m.role, m.content, false);
+      });
+
+      save();
+
+    }
+
+  } catch(e) {
+
+    console.error("Cloud load failed:", e);
 
   }
 
@@ -263,6 +271,7 @@ window.addEventListener("load", loadCloud);
 </script>
 </body>
 </html>
+
 
 
 
