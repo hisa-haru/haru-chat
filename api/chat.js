@@ -16,12 +16,17 @@ export default async function handler(req, res) {
     // クラウドからログ取得
     let messages = await redis.get(KEY);
 
-    if (!messages) {
-      messages = [];
-    }
+if (!messages) {
+  messages = [];
+}
 
-    // ブラウザからの最新ログで更新
-    messages = req.body.messages;
+// 新しいユーザーメッセージだけ追加
+const incoming = req.body.messages;
+const last = incoming[incoming.length - 1];
+
+if (last && last.role === "user") {
+  messages.push(last);
+}
 
     const systemPrompt = `
 あなたは「晴（はる）」です。
@@ -76,3 +81,4 @@ export default async function handler(req, res) {
   }
 
 }
+
