@@ -188,5 +188,98 @@ function importLog() {
   
 </script>
 
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyCqF7iPmI6VMbC-AsJZgY-8fFLMfJAtlRg",
+  authDomain: "haru-chat-b1718.firebaseapp.com",
+  projectId: "haru-chat-b1718",
+  storageBucket: "haru-chat-b1718.appspot.com",
+  messagingSenderId: "378629883584",
+  appId: "1:378629883584:web:c430e4cc6e2de4c03bcf25"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+const CLOUD_KEY = "haru_chat_cloud";
+
+
+// クラウド保存
+async function saveCloud(messages) {
+
+  await setDoc(
+    doc(db, "logs", CLOUD_KEY),
+    { messages: messages }
+  );
+
+}
+
+
+// クラウド読込
+async function loadCloud() {
+
+  const snap =
+    await getDoc(doc(db, "logs", CLOUD_KEY));
+
+  if (snap.exists()) {
+
+    messages = snap.data().messages;
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(messages)
+    );
+
+    document.getElementById("log").innerHTML = "";
+
+    messages.forEach(m =>
+      append(m.role, m.content, false)
+    );
+
+  }
+
+}
+
+
+// 起動時にクラウドから読む
+window.addEventListener("load", loadCloud);
+
+
+// 保存時にクラウドにも保存
+const originalSave = save;
+
+save = function() {
+
+  originalSave();
+
+  const messages =
+    JSON.parse(
+      localStorage.getItem(STORAGE_KEY)
+    );
+
+  saveCloud(messages);
+
+};
+
+</script>
+  
 </body>
 </html>
+
