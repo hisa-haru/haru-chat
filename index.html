@@ -271,25 +271,10 @@ async function loadCloud() {
 window.addEventListener("load", loadCloud);
 
 
-// 保存時にクラウドにも保存
-const originalSave = save;
-
-save = function() {
-
-  originalSave();
-
-  const messages =
-    JSON.parse(
-      localStorage.getItem(STORAGE_KEY)
-    );
-
-  saveCloud(messages);
-
-};
-
 </script>
   
 </body>
 </html>
+
 
 
