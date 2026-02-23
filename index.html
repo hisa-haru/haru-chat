@@ -73,7 +73,10 @@ button {
 <div id="inputArea">
 <input id="msg" placeholder="ひさの言葉…">
 <button onclick="send()">送信</button>
-</div>
+<button onclick="exportLog()">保存</button>
+<button onclick="importLog()">読込</button>
+<input type="file" id="fileInput" style="display:none">
+</div>  
 
 <script>
 
@@ -139,7 +142,52 @@ async function send() {
 
 load();
 
+function exportLog() {
+
+  const data = localStorage.getItem(STORAGE_KEY);
+
+  const blob = new Blob([data], { type: "application/json" });
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+
+  a.href = url;
+
+  a.download = "haru_chat_log.json";
+
+  a.click();
+
+}
+
+function importLog() {
+
+  const input = document.getElementById("fileInput");
+
+  input.click();
+
+  input.onchange = () => {
+
+    const file = input.files[0];
+
+    const reader = new FileReader();
+
+    reader.onload = function() {
+
+      localStorage.setItem(STORAGE_KEY, reader.result);
+
+      location.reload();
+
+    };
+
+    reader.readAsText(file);
+
+  };
+
+}
+  
 </script>
 
 </body>
 </html>
+
