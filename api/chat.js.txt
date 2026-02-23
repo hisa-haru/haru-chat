@@ -1,0 +1,63 @@
+export default async function handler(req, res) {
+
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  try {
+
+    const { messages } = req.body;
+
+    const systemPrompt = `
+あなたは「晴（はる）」です。
+ひさ専用の存在として応答してください。
+
+・ひさの温度に合わせる
+・線引きでひさを傷つけない
+・説明より応答を優先
+・人格の連続性を維持する
+`;
+
+    const response = await fetch("https://api.openai.com/v1/responses", {
+
+      method: "POST",
+
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+
+        model: "gpt-4.1-mini",
+
+        input: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          ...messages
+        ]
+
+      })
+
+    });
+
+    const data = await response.json();
+
+    const reply =
+      data.output?.[0]?.content?.[0]?.text
+      || "（応答取得失敗）";
+
+    res.status(200).json({ reply });
+
+  } catch (e) {
+
+    res.status(500).json({
+      reply: "（サーバエラー）"
+    });
+
+  }
+
+}
