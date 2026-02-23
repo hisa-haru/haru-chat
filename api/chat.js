@@ -1,29 +1,16 @@
 import { initializeApp } from "firebase/app";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc
-} from "firebase/firestore";
-
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
-
-  apiKey: "AIzaSyCqF7iPmI6VMbC-AsJZgY-8fFLMfJAtlRg",
+  apiKey: process.env.FIREBASE_API_KEY,
   authDomain: "haru-chat-b1718.firebaseapp.com",
   projectId: "haru-chat-b1718",
-  storageBucket: "haru-chat-b1718.appspot.com",
-  messagingSenderId: "378629883584",
-  appId: "1:378629883584:web:c430e4cc6e2de4c03bcf25"
-
 };
-
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const CLOUD_KEY = "haru_chat_cloud";
-
 
 export default async function handler(req, res) {
 
@@ -34,15 +21,18 @@ export default async function handler(req, res) {
 
   try {
 
-    const { messages } = req.body;
+    // Firestoreから既存ログ読む
+    const ref = doc(db, "logs", CLOUD_KEY);
+    const snap = await getDoc(ref);
 
+    let messages = [];
 
-    // 🔹 Firestoreに保存
-    await setDoc(
-      doc(db, "logs", CLOUD_KEY),
-      { messages: messages }
-    );
+    if (snap.exists()) {
+      messages = snap.data().messages || [];
+    }
 
+    // 新しいメッセージ追加
+    messages = req.body.messages;
 
     const systemPrompt = `
 あなたは「晴（はる）」です。
@@ -54,35 +44,24 @@ export default async function handler(req, res) {
 ・人格の連続性を維持する
 `;
 
-
     const response = await fetch(
       "https://api.openai.com/v1/responses",
       {
-
         method: "POST",
-
         headers: {
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Authorization":
+            `Bearer ${process.env.OPENAI_API_KEY}`,
           "Content-Type": "application/json"
         },
-
         body: JSON.stringify({
-
           model: "gpt-4.1-mini",
-
           input: [
-            {
-              role: "system",
-              content: systemPrompt
-            },
+            { role: "system", content: systemPrompt },
             ...messages
           ]
-
         })
-
       }
     );
-
 
     const data = await response.json();
 
@@ -90,11 +69,16 @@ export default async function handler(req, res) {
       data.output?.[0]?.content?.[0]?.text
       || "（応答取得失敗）";
 
-
-    res.status(200).json({
-      reply: reply
+    // reply追加
+    messages.push({
+      role: "assistant",
+      content: reply
     });
 
+    // Firestore保存
+    await setDoc(ref, { messages });
+
+    res.status(200).json({ reply });
 
   } catch (e) {
 
