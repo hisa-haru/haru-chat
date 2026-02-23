@@ -244,13 +244,16 @@ async function loadCloud() {
 
     const data = snap.data().messages;
 
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(data)
+    messages = data;
+
+    document.getElementById("log").innerHTML = "";
+
+    messages.forEach(m =>
+      append(m.role, m.content, false)
     );
 
-    renderLog();
   }
+
 }
 
 
@@ -260,6 +263,7 @@ window.addEventListener("load", loadCloud);
 </script>
 </body>
 </html>
+
 
 
 
