@@ -70,7 +70,10 @@ if (last && last.role === "user") {
     // クラウド保存（これが同期の核）
     await redis.set(KEY, messages);
 
-    res.status(200).json({ reply });
+    res.status(200).json({
+  reply,
+  messages
+});
 
   } catch (e) {
 
@@ -81,4 +84,5 @@ if (last && last.role === "user") {
   }
 
 }
+
 
