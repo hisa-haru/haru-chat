@@ -130,7 +130,7 @@ async function send() {
 
   if (!text) return;
 
-  append("user", text);
+  await append("user", text);
 
   input.value = "";
 
@@ -146,7 +146,7 @@ async function send() {
 
   const data = await res.json();
 
-  append("assistant", data.reply);
+  await append("assistant", data.reply);
 
 }
 
@@ -260,6 +260,7 @@ window.addEventListener("load", loadCloud);
 </script>
 </body>
 </html>
+
 
 
 
