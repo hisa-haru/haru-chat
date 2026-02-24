@@ -88,6 +88,16 @@ if (mode === "list") {
   let sessions = await redis.get(SESSIONS_KEY);
   if (!sessions) sessions = [];
 
+  // 👇 ここ追加（旧構造対応）
+  sessions = sessions.map(s => {
+    if (typeof s === "string") {
+      return { id: s, name: s };
+    }
+    return s;
+  });
+
+  await redis.set(SESSIONS_KEY, sessions);
+
   res.status(200).json({
     sessions
   });
@@ -217,6 +227,7 @@ const recentMessages = messages.slice(-20);
   }
 
 }
+
 
 
 
