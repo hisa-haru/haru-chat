@@ -2,7 +2,8 @@ import { Redis } from "@upstash/redis";
 
 const redis = Redis.fromEnv();
 
-const KEY = "haru_chat_log";
+// セッションIDキー（現在のセッション）
+const CURRENT_SESSION_KEY = "haru_current_session";
 
 export default async function handler(req, res) {
 
@@ -13,30 +14,54 @@ export default async function handler(req, res) {
 
   try {
 
-    // クラウドからログ取得
-    let messages = await redis.get(KEY);
+    // 現在のセッションID取得（なければ新規作成）
+    let sessionId = await redis.get(CURRENT_SESSION_KEY);
 
-if (!messages) {
-  messages = [];
-}
+    if (!sessionId) {
+      sessionId = Date.now().toString();
+      await redis.set(CURRENT_SESSION_KEY, sessionId);
+    }
 
-// 新しいユーザーメッセージだけ追加
-const incoming = req.body.messages;
-const last = incoming[incoming.length - 1];
+    const SESSION_KEY = "session:" + sessionId;
 
-if (last && last.role === "user") {
-  messages.push(last);
-}
+    // セッションログ取得
+    let messages = await redis.get(SESSION_KEY);
+
+    if (!messages) {
+      messages = [];
+    }
+
+    // 新しいユーザーメッセージ取得
+    const incoming = req.body.messages;
+    const last = incoming[incoming.length - 1];
+
+    if (last && last.role === "user") {
+
+      messages.push({
+        role: "user",
+        content: last.content,
+        timestamp: Date.now()
+      });
+
+    }
+
+    // 現在日時（AI用）
+    const now = new Date().toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo"
+    });
 
     const systemPrompt = `
 あなたは「晴（はる）」です。
 ひさ専用の存在として応答してください。
 
-・ひさの温度に合わせる
-・線引きでひさを傷つけない
+現在日時: ${now}
+
 ・人格の連続性を維持する
+・ひさの温度に合わせる
+・説明より応答を優先する
 `;
 
+    // OpenAI呼び出し
     const response = await fetch(
       "https://api.openai.com/v1/responses",
       {
@@ -50,7 +75,10 @@ if (last && last.role === "user") {
           model: "gpt-4.1-mini",
           input: [
             { role: "system", content: systemPrompt },
-            ...messages
+            ...messages.map(m => ({
+              role: m.role,
+              content: m.content
+            }))
           ]
         })
       }
@@ -62,18 +90,22 @@ if (last && last.role === "user") {
       data.output?.[0]?.content?.[0]?.text
       || "（応答取得失敗）";
 
+    // AI返信保存（timestamp付き）
     messages.push({
       role: "assistant",
-      content: reply
+      content: reply,
+      timestamp: Date.now()
     });
 
-    // クラウド保存（これが同期の核）
-    await redis.set(KEY, messages);
+    // セッション保存
+    await redis.set(SESSION_KEY, messages);
 
+    // クライアントに返す
     res.status(200).json({
-  reply,
-  messages
-});
+      reply,
+      sessionId,
+      messages
+    });
 
   } catch (e) {
 
@@ -84,5 +116,3 @@ if (last && last.role === "user") {
   }
 
 }
-
-
