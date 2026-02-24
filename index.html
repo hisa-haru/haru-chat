@@ -203,7 +203,7 @@ fetch("/api/chat", {
     "Content-Type": "application/json"
   },
   body: JSON.stringify({
-    messages: []
+     mode: "load" 
   })
 })
 .then(r => r.json())
@@ -275,6 +275,7 @@ function importLog() {
   
 </body>
 </html>
+
 
 
 
