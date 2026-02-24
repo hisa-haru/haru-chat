@@ -59,27 +59,28 @@ if (!sessionId) {
     }
 
     // ===== セッション新規モード =====
-　if (mode === "new") {
+　const newSessionId = Date.now().toString();
 
-  const newSessionId = Date.now().toString();
+await redis.set(CURRENT_SESSION_KEY, newSessionId);
 
-  await redis.set(CURRENT_SESSION_KEY, newSessionId);
+let sessions = await redis.get(SESSIONS_KEY);
+if (!sessions) sessions = [];
 
-  let sessions = await redis.get(SESSIONS_KEY);
-  if (!sessions) sessions = [];
+sessions.push({
+  id: newSessionId,
+  name: "新しい会話"
+});
 
-  sessions.push(newSessionId);
+await redis.set(SESSIONS_KEY, sessions);
 
-  await redis.set(SESSIONS_KEY, sessions);
+await redis.set("session:" + newSessionId, []);
 
-  await redis.set("session:" + newSessionId, []);
+res.status(200).json({
+  sessionId: newSessionId,
+  messages: []
+});
 
-  res.status(200).json({
-    sessionId: newSessionId,
-    messages: []
-  });
-
-  return;
+return;
 }
 
 if (mode === "list") {
@@ -110,20 +111,35 @@ if (mode === "switch") {
   return;
 }
     
-    // ===== ここから送信モード =====
+  // ===== ここから送信モード =====
 
-    const incoming = req.body.messages || [];
-    const last = incoming[incoming.length - 1];
+const incoming = req.body.messages || [];
+const last = incoming[incoming.length - 1];
 
-    if (last && last.role === "user") {
+if (last && last.role === "user") {
 
-      messages.push({
-        role: "user",
-        content: last.content,
-        timestamp: Date.now()
-      });
+  messages.push({
+    role: "user",
+    content: last.content,
+    timestamp: Date.now()
+  });
 
-    }
+  // 👇 ここに追加（STEP2）
+  let sessions = await redis.get(SESSIONS_KEY);
+  if (sessions) {
+    sessions = sessions.map(s => {
+      if (s.id === sessionId && s.name === "新しい会話") {
+        return {
+          ...s,
+          name: last.content.slice(0, 20)
+        };
+      }
+      return s;
+    });
+    await redis.set(SESSIONS_KEY, sessions);
+  }
+
+}
 
     // 現在日時
     const now = new Date().toLocaleString("ja-JP", {
@@ -201,6 +217,7 @@ const recentMessages = messages.slice(-20);
   }
 
 }
+
 
 
 
