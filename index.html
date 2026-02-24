@@ -81,8 +81,11 @@ button {
 <body>
 
 <div id="header">晴 - chat</div>
-<div id="log"></div>
 
+<div id="sessions" style="padding:8px; background:#fafafa;"></div>
+  
+<div id="log"></div>
+  
 <div id="inputArea">
 <input id="msg" placeholder="ひさの言葉…">
 <button onclick="send()">送信</button>
@@ -186,9 +189,59 @@ fetch(API_URL, {
     );
   }
 
+loadSessions();
+  
+async function loadSessions() {
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode: "list" })
+  });
+
+  const data = await res.json();
+
+  const container = document.getElementById("sessions");
+  container.innerHTML = "";
+
+  if (data.sessions) {
+
+    data.sessions.forEach(id => {
+
+      const btn = document.createElement("button");
+      btn.textContent = id;
+
+      btn.onclick = async () => {
+
+        const res2 = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: "switch",
+            sessionId: id
+          })
+        });
+
+        const data2 = await res2.json();
+
+        document.getElementById("log").innerHTML = "";
+
+        if (data2.messages) {
+          data2.messages.forEach(m =>
+            append(m.role, m.content, m.timestamp)
+          );
+        }
+      };
+
+      container.appendChild(btn);
+    });
+  }
+}
+  
 });
 
 </script>
 </body>
 </html>
+
 
