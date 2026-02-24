@@ -189,8 +189,12 @@ fetch(API_URL, {
     );
   }
 
-loadSessions();
-  
+  loadSessions();
+
+});
+
+
+// セッション一覧読み込み
 async function loadSessions() {
 
   const res = await fetch(API_URL, {
@@ -204,59 +208,47 @@ async function loadSessions() {
   const container = document.getElementById("sessions");
   container.innerHTML = "";
 
-  if (data.sessions) {
+  if (!data.sessions) return;
 
-  data.sessions.forEach(session => {
+  data.sessions.forEach(s => {
 
-  const btn = document.createElement("button");
-  btn.textContent = session.name;
+    const session = typeof s === "string"
+      ? { id: s, name: s }
+      : s;
 
-  btn.onclick = async () => {
+    const btn = document.createElement("button");
+    btn.textContent = session.name;
 
-    const res2 = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        mode: "switch",
-        sessionId: session.id
-      })
-    });
+    btn.onclick = async () => {
 
-    const data2 = await res2.json();
+      const res2 = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "switch",
+          sessionId: session.id
+        })
+      });
 
-    document.getElementById("log").innerHTML = "";
+      const data2 = await res2.json();
 
-    if (data2.messages) {
-      data2.messages.forEach(m =>
-        append(m.role, m.content, m.timestamp)
-      );
-    }
-  };
+      document.getElementById("log").innerHTML = "";
 
-  container.appendChild(btn);
-});
+      if (data2.messages) {
+        data2.messages.forEach(m =>
+          append(m.role, m.content, m.timestamp)
+        );
+      }
+    };
 
-        const data2 = await res2.json();
-
-        document.getElementById("log").innerHTML = "";
-
-        if (data2.messages) {
-          data2.messages.forEach(m =>
-            append(m.role, m.content, m.timestamp)
-          );
-        }
-      };
-
-      container.appendChild(btn);
-    });
-  }
+    container.appendChild(btn);
+  });
 }
-  
-});
 
 </script>
 </body>
 </html>
+
 
 
 
