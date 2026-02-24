@@ -208,6 +208,7 @@ fetch("/api/chat", {
 })
 .then(r => r.json())
 .then(data => {
+  document.getElementById("log").innerHTML = "";
   if (data.messages) {
     messages = data.messages;
     localStorage.setItem(
@@ -215,9 +216,7 @@ fetch("/api/chat", {
       JSON.stringify(messages)
     );
 
-    document.getElementById("log").innerHTML = "";
-
-    messages.forEach(m =>
+  messages.forEach(m =>
   append(
     m.role,
     m.content,
@@ -276,6 +275,7 @@ function importLog() {
   
 </body>
 </html>
+
 
 
 
