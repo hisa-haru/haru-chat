@@ -76,6 +76,9 @@ export default async function handler(req, res) {
 ・説明より応答を優先する
 `;
 
+// 直近20件だけ使う（暴走防止）
+const recentMessages = messages.slice(-20);
+    
     // OpenAI呼び出し
     const response = await fetch(
       "https://api.openai.com/v1/responses",
@@ -90,7 +93,7 @@ export default async function handler(req, res) {
           model: "gpt-4.1-mini",
           input: [
             { role: "system", content: systemPrompt },
-            ...messages.map(m => ({
+            ...recentMessages.map(m => ({
               role: m.role,
               content: m.content
             }))
@@ -133,3 +136,4 @@ export default async function handler(req, res) {
   }
 
 }
+
