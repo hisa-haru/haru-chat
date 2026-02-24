@@ -61,6 +61,20 @@ body {
 button {
   padding: 8px 16px;
 }
+  
+.timestamp {
+  font-size: 11px;
+  color: #999;
+  margin: 6px 12px 2px 12px;
+}
+
+.timestamp.me {
+  text-align: right;
+}
+
+.timestamp.bot {
+  text-align: left;
+} 
 </style>
 
 </head>
@@ -106,20 +120,51 @@ function save() {
 
 }
 
-function append(role, text, saveFlag=true) {
+function append(role, text, saveFlag=true, timestamp=null) {
 
-  const div = document.createElement("div");
-  div.className = "msg " + (role === "user" ? "me" : "bot");
-  div.textContent = text;
+  const log = document.getElementById("log");
 
-  document.getElementById("log").appendChild(div);
+  // timestamp表示
+  if (timestamp) {
 
-  if (saveFlag) {
-    messages.push({role, content:text});
-    save();
+    const timeDiv = document.createElement("div");
+
+    timeDiv.className =
+      "timestamp " + (role === "user" ? "me" : "bot");
+
+    const date = new Date(timestamp);
+
+    timeDiv.textContent =
+      date.toLocaleString("ja-JP");
+
+    log.appendChild(timeDiv);
+
   }
 
-  document.getElementById("log").scrollTop = 999999;
+  // メッセージ表示
+  const div = document.createElement("div");
+
+  div.className =
+    "msg " + (role === "user" ? "me" : "bot");
+
+  div.textContent = text;
+
+  log.appendChild(div);
+
+  if (saveFlag) {
+
+    messages.push({
+      role,
+      content: text,
+      timestamp: Date.now()
+    });
+
+    save();
+
+  }
+
+  log.scrollTop = log.scrollHeight;
+
 }
 
 async function send() {
@@ -173,8 +218,13 @@ fetch("/api/chat", {
     document.getElementById("log").innerHTML = "";
 
     messages.forEach(m =>
-      append(m.role, m.content, false)
-    );
+  append(
+    m.role,
+    m.content,
+    false,
+    m.timestamp
+  )
+);
   }
 });
 
@@ -226,6 +276,7 @@ function importLog() {
   
 </body>
 </html>
+
 
 
 
