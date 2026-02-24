@@ -206,21 +206,35 @@ async function loadSessions() {
 
   if (data.sessions) {
 
-    data.sessions.forEach(id => {
+  data.sessions.forEach(session => {
 
-      const btn = document.createElement("button");
-      btn.textContent = id;
+  const btn = document.createElement("button");
+  btn.textContent = session.name;
 
-      btn.onclick = async () => {
+  btn.onclick = async () => {
 
-        const res2 = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            mode: "switch",
-            sessionId: id
-          })
-        });
+    const res2 = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "switch",
+        sessionId: session.id
+      })
+    });
+
+    const data2 = await res2.json();
+
+    document.getElementById("log").innerHTML = "";
+
+    if (data2.messages) {
+      data2.messages.forEach(m =>
+        append(m.role, m.content, m.timestamp)
+      );
+    }
+  };
+
+  container.appendChild(btn);
+});
 
         const data2 = await res2.json();
 
@@ -243,5 +257,6 @@ async function loadSessions() {
 </script>
 </body>
 </html>
+
 
 
