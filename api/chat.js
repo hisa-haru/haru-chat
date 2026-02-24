@@ -2,6 +2,9 @@ import { Redis } from "@upstash/redis";
 
 const redis = Redis.fromEnv();
 
+// セッション一覧キー
+const SESSIONS_KEY = "haru_sessions";
+
 // 現在のセッションIDキー
 const CURRENT_SESSION_KEY = "haru_current_session";
 
@@ -20,10 +23,20 @@ export default async function handler(req, res) {
     // セッションID取得（なければ新規作成）
     let sessionId = await redis.get(CURRENT_SESSION_KEY);
 
-    if (!sessionId) {
-      sessionId = Date.now().toString();
-      await redis.set(CURRENT_SESSION_KEY, sessionId);
-    }
+if (!sessionId) {
+
+  sessionId = Date.now().toString();
+
+  await redis.set(CURRENT_SESSION_KEY, sessionId);
+
+  // 一覧に追加
+  let sessions = await redis.get(SESSIONS_KEY);
+  if (!sessions) sessions = [];
+
+  sessions.push(sessionId);
+
+  await redis.set(SESSIONS_KEY, sessions);
+}
 
     const SESSION_KEY = "session:" + sessionId;
 
@@ -45,6 +58,30 @@ export default async function handler(req, res) {
       return;
     }
 
+    // ===== セッション新規モード =====
+　if (mode === "new") {
+
+  const newSessionId = Date.now().toString();
+
+  await redis.set(CURRENT_SESSION_KEY, newSessionId);
+
+  let sessions = await redis.get(SESSIONS_KEY);
+  if (!sessions) sessions = [];
+
+  sessions.push(newSessionId);
+
+  await redis.set(SESSIONS_KEY, sessions);
+
+  await redis.set("session:" + newSessionId, []);
+
+  res.status(200).json({
+    sessionId: newSessionId,
+    messages: []
+  });
+
+  return;
+}
+    
     // ===== ここから送信モード =====
 
     const incoming = req.body.messages || [];
@@ -136,4 +173,5 @@ const recentMessages = messages.slice(-20);
   }
 
 }
+
 
