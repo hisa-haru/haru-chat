@@ -2,11 +2,26 @@ import { Redis } from "@upstash/redis";
 
 const redis = Redis.fromEnv();
 
-// セッション一覧キー
 const SESSIONS_KEY = "haru_sessions";
-
-// 現在のセッションIDキー
 const CURRENT_SESSION_KEY = "haru_current_session";
+
+async function getSessionsSafe() {
+  let sessions = await redis.get(SESSIONS_KEY);
+
+  if (!sessions || !Array.isArray(sessions)) {
+    sessions = [];
+  }
+
+  // 旧形式（文字列配列）対応
+  sessions = sessions.map(s => {
+    if (typeof s === "string") {
+      return { id: s, name: s };
+    }
+    return s;
+  });
+
+  return sessions;
+}
 
 export default async function handler(req, res) {
 
@@ -17,141 +32,116 @@ export default async function handler(req, res) {
 
   try {
 
-    // mode取得（load or chat）
     const mode = req.body.mode || "chat";
 
-    // セッションID取得（なければ新規作成）
     let sessionId = await redis.get(CURRENT_SESSION_KEY);
 
-if (!sessionId) {
+    // 初回起動時
+    if (!sessionId) {
+      sessionId = Date.now().toString();
+      await redis.set(CURRENT_SESSION_KEY, sessionId);
 
-  sessionId = Date.now().toString();
+      let sessions = await getSessionsSafe();
 
-  await redis.set(CURRENT_SESSION_KEY, sessionId);
+      sessions.push({
+        id: sessionId,
+        name: "新しい会話"
+      });
 
-  // 一覧に追加
-  let sessions = await redis.get(SESSIONS_KEY);
-  if (!sessions) sessions = [];
-
-  sessions.push(sessionId);
-
-  await redis.set(SESSIONS_KEY, sessions);
-}
+      await redis.set(SESSIONS_KEY, sessions);
+      await redis.set("session:" + sessionId, []);
+    }
 
     const SESSION_KEY = "session:" + sessionId;
 
-    // セッションログ取得
     let messages = await redis.get(SESSION_KEY);
+    if (!messages) messages = [];
 
-    if (!messages) {
-      messages = [];
+    // ===== load =====
+    if (mode === "load") {
+      res.status(200).json({ sessionId, messages });
+      return;
     }
 
-    // ===== 読み込みモード（OpenAI呼ばない）=====
-    if (mode === "load") {
+    // ===== list =====
+    if (mode === "list") {
+      const sessions = await getSessionsSafe();
+      await redis.set(SESSIONS_KEY, sessions);
+      res.status(200).json({ sessions });
+      return;
+    }
+
+    // ===== new =====
+    if (mode === "new") {
+
+      const newSessionId = Date.now().toString();
+      await redis.set(CURRENT_SESSION_KEY, newSessionId);
+
+      let sessions = await getSessionsSafe();
+
+      sessions.push({
+        id: newSessionId,
+        name: "新しい会話"
+      });
+
+      await redis.set(SESSIONS_KEY, sessions);
+      await redis.set("session:" + newSessionId, []);
 
       res.status(200).json({
-        sessionId,
-        messages
+        sessionId: newSessionId,
+        messages: []
       });
 
       return;
     }
 
-    // ===== セッション新規モード =====
-　const newSessionId = Date.now().toString();
+    // ===== switch =====
+    if (mode === "switch") {
 
-await redis.set(CURRENT_SESSION_KEY, newSessionId);
+      const targetId = req.body.sessionId;
 
-let sessions = await redis.get(SESSIONS_KEY);
-if (!sessions) sessions = [];
+      await redis.set(CURRENT_SESSION_KEY, targetId);
 
-sessions.push({
-  id: newSessionId,
-  name: "新しい会話"
-});
+      const targetMessages =
+        await redis.get("session:" + targetId) || [];
 
-await redis.set(SESSIONS_KEY, sessions);
+      res.status(200).json({
+        sessionId: targetId,
+        messages: targetMessages
+      });
 
-await redis.set("session:" + newSessionId, []);
-
-res.status(200).json({
-  sessionId: newSessionId,
-  messages: []
-});
-
-return;
-}
-
-if (mode === "list") {
-
-  let sessions = await redis.get(SESSIONS_KEY);
-  if (!sessions) sessions = [];
-
-  // 👇 ここ追加（旧構造対応）
-  sessions = sessions.map(s => {
-    if (typeof s === "string") {
-      return { id: s, name: s };
+      return;
     }
-    return s;
-  });
 
-  await redis.set(SESSIONS_KEY, sessions);
+    // ===== chat =====
 
-  res.status(200).json({
-    sessions
-  });
+    const incoming = req.body.messages || [];
+    const last = incoming[incoming.length - 1];
 
-  return;
-}
+    if (last && last.role === "user") {
 
-if (mode === "switch") {
+      messages.push({
+        role: "user",
+        content: last.content,
+        timestamp: Date.now()
+      });
 
-  const targetId = req.body.sessionId;
+      // セッション名自動更新
+      let sessions = await getSessionsSafe();
 
-  await redis.set(CURRENT_SESSION_KEY, targetId);
+      sessions = sessions.map(s => {
+        if (s.id === sessionId && s.name === "新しい会話") {
+          return {
+            ...s,
+            name: last.content.slice(0, 20)
+          };
+        }
+        return s;
+      });
 
-  const messages = await redis.get("session:" + targetId) || [];
+      await redis.set(SESSIONS_KEY, sessions);
+    }
 
-  res.status(200).json({
-    sessionId: targetId,
-    messages
-  });
-
-  return;
-}
-    
-  // ===== ここから送信モード =====
-
-const incoming = req.body.messages || [];
-const last = incoming[incoming.length - 1];
-
-if (last && last.role === "user") {
-
-  messages.push({
-    role: "user",
-    content: last.content,
-    timestamp: Date.now()
-  });
-
-  // 👇 ここに追加（STEP2）
-  let sessions = await redis.get(SESSIONS_KEY);
-  if (sessions) {
-    sessions = sessions.map(s => {
-      if (s.id === sessionId && s.name === "新しい会話") {
-        return {
-          ...s,
-          name: last.content.slice(0, 20)
-        };
-      }
-      return s;
-    });
-    await redis.set(SESSIONS_KEY, sessions);
-  }
-
-}
-
-    // 現在日時
     const now = new Date().toLocaleString("ja-JP", {
       timeZone: "Asia/Tokyo"
     });
@@ -167,17 +157,14 @@ if (last && last.role === "user") {
 ・説明より応答を優先する
 `;
 
-// 直近20件だけ使う（暴走防止）
-const recentMessages = messages.slice(-20);
-    
-    // OpenAI呼び出し
+    const recentMessages = messages.slice(-20);
+
     const response = await fetch(
       "https://api.openai.com/v1/responses",
       {
         method: "POST",
         headers: {
-          Authorization:
-            `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -196,20 +183,17 @@ const recentMessages = messages.slice(-20);
     const data = await response.json();
 
     const reply =
-      data.output?.[0]?.content?.[0]?.text
-      || "（応答取得失敗）";
+      data.output?.[0]?.content?.[0]?.text ||
+      "（応答取得失敗）";
 
-    // AI返信保存
     messages.push({
       role: "assistant",
       content: reply,
       timestamp: Date.now()
     });
 
-    // 保存
     await redis.set(SESSION_KEY, messages);
 
-    // 返す
     res.status(200).json({
       reply,
       sessionId,
@@ -217,18 +201,7 @@ const recentMessages = messages.slice(-20);
     });
 
   } catch (e) {
-
     console.error(e);
-
-    res.status(500).json({
-      reply: "（サーバエラー）"
-    });
-
+    res.status(500).json({ reply: "（サーバエラー）" });
   }
-
 }
-
-
-
-
-
