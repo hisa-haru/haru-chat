@@ -61,7 +61,7 @@ body {
 button {
   padding: 8px 16px;
 }
-  
+
 .timestamp {
   font-size: 11px;
   color: #999;
@@ -74,213 +74,106 @@ button {
 
 .timestamp.bot {
   text-align: left;
-} 
+}
 </style>
 
 </head>
 <body>
 
 <div id="header">晴 - chat</div>
-
 <div id="log"></div>
 
 <div id="inputArea">
 <input id="msg" placeholder="ひさの言葉…">
 <button onclick="send()">送信</button>
-<button onclick="exportLog()">保存</button>
-<button onclick="importLog()">読込</button>
-<input type="file" id="fileInput" style="display:none">
-</div>  
+</div>
 
 <script>
 
 const API_URL = "/api/chat";
-const STORAGE_KEY = "haru_chat_log_v1";
 
 let messages = [];
 
-function load() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    messages = JSON.parse(saved);
-    messages.forEach(m => append(m.role, m.content, false));
-  }
-}
-
-function save() {
-
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(messages)
-  );
-
-  if (window.saveCloud) {
-    window.saveCloud(messages);
-  }
-
-}
-
-function append(role, text, saveFlag=true, timestamp=null) {
+function append(role, text, timestamp=null) {
 
   const log = document.getElementById("log");
 
-  // timestamp表示
   if (timestamp) {
-
     const timeDiv = document.createElement("div");
-
     timeDiv.className =
       "timestamp " + (role === "user" ? "me" : "bot");
-
     const date = new Date(timestamp);
-
-    timeDiv.textContent =
-      date.toLocaleString("ja-JP");
-
+    timeDiv.textContent = date.toLocaleString("ja-JP");
     log.appendChild(timeDiv);
-
   }
 
-  // メッセージ表示
   const div = document.createElement("div");
-
   div.className =
     "msg " + (role === "user" ? "me" : "bot");
-
   div.textContent = text;
-
   log.appendChild(div);
 
-  if (saveFlag) {
-
-    messages.push({
-      role,
-      content: text,
-      timestamp: Date.now()
-    });
-
-    save();
-
-  }
-
   log.scrollTop = log.scrollHeight;
-
 }
 
 async function send() {
 
   const input = document.getElementById("msg");
   const text = input.value.trim();
-
   if (!text) return;
-
-  append("user", text);
 
   input.value = "";
 
   const res = await fetch(API_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      messages: messages
+      mode: "chat",
+      messages: [
+        { role: "user", content: text }
+      ]
     })
   });
 
   const data = await res.json();
 
-  append("assistant", data.reply);
+  // サーバーが返した完全ログで再描画
+  document.getElementById("log").innerHTML = "";
 
+  if (data.messages) {
+    messages = data.messages;
+    messages.forEach(m =>
+      append(
+        m.role,
+        m.content,
+        m.timestamp
+      )
+    );
+  }
 }
 
-load();
-
-// サーバから最新ログ取得
-fetch("/api/chat", {
+// 初期ロード（Redisからのみ）
+fetch(API_URL, {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-     mode: "load" 
-  })
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ mode: "load" })
 })
 .then(r => r.json())
 .then(data => {
-  document.getElementById("log").innerHTML = "";
+
   if (data.messages) {
     messages = data.messages;
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(messages)
+    messages.forEach(m =>
+      append(
+        m.role,
+        m.content,
+        m.timestamp
+      )
     );
-
-  messages.forEach(m =>
-  append(
-    m.role,
-    m.content,
-    false,
-    m.timestamp
-  )
-);
   }
+
 });
 
-function exportLog() {
-
-  const data = localStorage.getItem(STORAGE_KEY);
-
-  const blob = new Blob([data], { type: "application/json" });
-
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-
-  a.href = url;
-
-  a.download = "haru_chat_log.json";
-
-  a.click();
-
-}
-
-function importLog() {
-
-  const input = document.getElementById("fileInput");
-
-  input.click();
-
-  input.onchange = () => {
-
-    const file = input.files[0];
-
-    const reader = new FileReader();
-
-    reader.onload = function() {
-
-      localStorage.setItem(STORAGE_KEY, reader.result);
-
-      location.reload();
-
-    };
-
-    reader.readAsText(file);
-
-  };
-
-}
-  
 </script>
-  
 </body>
 </html>
-
-
-
-
-
-
-
-
-
