@@ -2,7 +2,7 @@ import { Redis } from "@upstash/redis";
 
 const redis = Redis.fromEnv();
 
-// セッションIDキー（現在のセッション）
+// 現在のセッションIDキー
 const CURRENT_SESSION_KEY = "haru_current_session";
 
 export default async function handler(req, res) {
@@ -14,7 +14,10 @@ export default async function handler(req, res) {
 
   try {
 
-    // 現在のセッションID取得（なければ新規作成）
+    // mode取得（load or chat）
+    const mode = req.body.mode || "chat";
+
+    // セッションID取得（なければ新規作成）
     let sessionId = await redis.get(CURRENT_SESSION_KEY);
 
     if (!sessionId) {
@@ -31,8 +34,20 @@ export default async function handler(req, res) {
       messages = [];
     }
 
-    // 新しいユーザーメッセージ取得
-    const incoming = req.body.messages;
+    // ===== 読み込みモード（OpenAI呼ばない）=====
+    if (mode === "load") {
+
+      res.status(200).json({
+        sessionId,
+        messages
+      });
+
+      return;
+    }
+
+    // ===== ここから送信モード =====
+
+    const incoming = req.body.messages || [];
     const last = incoming[incoming.length - 1];
 
     if (last && last.role === "user") {
@@ -45,7 +60,7 @@ export default async function handler(req, res) {
 
     }
 
-    // 現在日時（AI用）
+    // 現在日時
     const now = new Date().toLocaleString("ja-JP", {
       timeZone: "Asia/Tokyo"
     });
@@ -90,17 +105,17 @@ export default async function handler(req, res) {
       data.output?.[0]?.content?.[0]?.text
       || "（応答取得失敗）";
 
-    // AI返信保存（timestamp付き）
+    // AI返信保存
     messages.push({
       role: "assistant",
       content: reply,
       timestamp: Date.now()
     });
 
-    // セッション保存
+    // 保存
     await redis.set(SESSION_KEY, messages);
 
-    // クライアントに返す
+    // 返す
     res.status(200).json({
       reply,
       sessionId,
@@ -108,6 +123,8 @@ export default async function handler(req, res) {
     });
 
   } catch (e) {
+
+    console.error(e);
 
     res.status(500).json({
       reply: "（サーバエラー）"
