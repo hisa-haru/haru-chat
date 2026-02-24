@@ -81,6 +81,34 @@ if (!sessionId) {
 
   return;
 }
+
+if (mode === "list") {
+
+  let sessions = await redis.get(SESSIONS_KEY);
+  if (!sessions) sessions = [];
+
+  res.status(200).json({
+    sessions
+  });
+
+  return;
+}
+
+if (mode === "switch") {
+
+  const targetId = req.body.sessionId;
+
+  await redis.set(CURRENT_SESSION_KEY, targetId);
+
+  const messages = await redis.get("session:" + targetId) || [];
+
+  res.status(200).json({
+    sessionId: targetId,
+    messages
+  });
+
+  return;
+}
     
     // ===== ここから送信モード =====
 
@@ -173,5 +201,6 @@ const recentMessages = messages.slice(-20);
   }
 
 }
+
 
 
