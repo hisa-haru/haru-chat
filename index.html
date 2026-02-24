@@ -86,6 +86,7 @@ button {
 <div id="inputArea">
 <input id="msg" placeholder="ひさの言葉…">
 <button onclick="send()">送信</button>
+<button onclick="newSession()">新規</button>  
 </div>
 
 <script>
@@ -151,7 +152,20 @@ async function send() {
     );
   }
 }
+  
+async function newSession() {
 
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode: "new" })
+  });
+
+  const data = await res.json();
+
+  document.getElementById("log").innerHTML = "";
+}
+  
 // 初期ロード（Redisからのみ）
 fetch(API_URL, {
   method: "POST",
@@ -177,3 +191,4 @@ fetch(API_URL, {
 </script>
 </body>
 </html>
+
