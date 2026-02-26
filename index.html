@@ -68,6 +68,17 @@ button {
   padding: 8px 16px;
 }
 
+/* 改行ボタンはスマホのみ表示 */
+#btnNewline {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  #btnNewline {
+    display: inline-block;
+  }
+}
+
 .timestamp {
   font-size: 11px;
   color: #999;
@@ -94,8 +105,9 @@ button {
   
 <div id="inputArea">
 <textarea id="msg" rows="1" placeholder="ひさの言葉…"></textarea>
+<button id="btnNewline" onclick="insertNewline()">改行</button>
 <button onclick="send()">送信</button>
-<button onclick="newSession()">新規</button>  
+<button onclick="newSession()">新規</button>
 </div>
 
 <script>
@@ -119,6 +131,17 @@ document.addEventListener("DOMContentLoaded", () => {
     msg.style.height = msg.scrollHeight + "px";
   });
 });
+
+function insertNewline() {
+  const msg = document.getElementById("msg");
+  const start = msg.selectionStart;
+  const end = msg.selectionEnd;
+  msg.value = msg.value.slice(0, start) + "\n" + msg.value.slice(end);
+  msg.selectionStart = msg.selectionEnd = start + 1;
+  msg.style.height = "auto";
+  msg.style.height = msg.scrollHeight + "px";
+  msg.focus();
+}
 
 let messages = [];
 
