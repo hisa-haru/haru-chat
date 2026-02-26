@@ -56,6 +56,12 @@ body {
 #msg {
   flex: 1;
   padding: 8px;
+  resize: none;
+  line-height: 1.4;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 button {
@@ -87,7 +93,7 @@ button {
 <div id="log"></div>
   
 <div id="inputArea">
-<input id="msg" placeholder="ひさの言葉…">
+<textarea id="msg" rows="1" placeholder="ひさの言葉…"></textarea>
 <button onclick="send()">送信</button>
 <button onclick="newSession()">新規</button>  
 </div>
@@ -95,6 +101,24 @@ button {
 <script>
 
 const API_URL = "/api/chat";
+
+// Enterで送信、Shift+Enterで改行
+document.addEventListener("DOMContentLoaded", () => {
+  const msg = document.getElementById("msg");
+
+  msg.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+
+  // 入力に合わせてtextareaの高さを自動調整
+  msg.addEventListener("input", () => {
+    msg.style.height = "auto";
+    msg.style.height = msg.scrollHeight + "px";
+  });
+});
 
 let messages = [];
 
@@ -127,6 +151,7 @@ async function send() {
   if (!text) return;
 
   input.value = "";
+  input.style.height = "auto";
 
   const res = await fetch(API_URL, {
     method: "POST",
