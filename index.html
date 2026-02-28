@@ -50,7 +50,7 @@ body {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border-color);
   font-weight: bold;
-　margin-left: 260px;
+
   position: sticky;
   top: 0;
   z-index: 20;
@@ -135,9 +135,12 @@ body.dark .timestamp {
   bottom: 0;
   width: auto;
   background: var(--bg-header);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid rgba(255,255,255,0.08);
   padding: 10px;
   box-sizing: border-box;
+
+  backdrop-filter: blur(10px);
+  background: rgba(15, 22, 35, 0.75);
 
   display: flex;
   gap: 8px;
@@ -257,6 +260,9 @@ body.dark #sessionsInSidebar button:hover {
     transform: translateX(0);
     z-index: 30;
   }
+  #header {
+    margin-left: 260px;
+  }
   #log{ margin-left: 260px; }
   #inputArea{
     left: 260px;
@@ -327,4 +333,3 @@ body.dark #sessionsInSidebar button:hover {
 
 </body>
 </html>
-
