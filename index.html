@@ -25,6 +25,14 @@ body.dark {
   --border-color: #24344a;
 }
 
+body.dark .bot {
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+body.dark .me {
+  border: none;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -95,11 +103,19 @@ body {
 
 .timestamp {
   font-size: 11px;
-  color: #999;
-  margin: 4px 10px;
+  color: rgba(230, 240, 255, 0.45);
+  margin: 2px 16px 2px 16px;
+  display: inline-block;
 }
-.timestamp.me { text-align: right; }
-.timestamp.bot { text-align: left; }
+.timestamp.me {
+  text-align: right;
+  margin-right: 12px;
+}
+
+.timestamp.bot {
+  text-align: left;
+  margin-left: 12px;
+}
 
 /* ===== Input Area ===== */
 #inputArea {
@@ -126,11 +142,17 @@ body {
   overflow-y: auto;
   padding: 12px;
 
-  border: 1px solid #ccc;   /* ← 枠を普通に戻す */
+  background: #162132;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
   border-radius: 22px;      /* ← 角丸を戻す */
 
   box-sizing: border-box;
   font-size: 16px;
+}
+
+#msg::placeholder {
+  color: rgba(230, 240, 255, 0.4);
 }
 
 /* 送信ボタン（丸アイコン） */
@@ -184,10 +206,14 @@ body {
   padding: 10px;
   margin: 6px 0;
   border-radius: 10px;
-  border: 1px solid #ddd;
-  background: #fafafa;
+  border: 1px solid var(--border-color);
+  background: #162132;
   cursor: pointer;
-  color: #333;
+  color: var(--text-main);
+}
+
+#sessionsInSidebar button:hover {
+  background: #1d2a3f;
 }
 
 /* PCではサイドバー常時表示 */
