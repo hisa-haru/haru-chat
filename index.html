@@ -6,11 +6,31 @@
 <title>晴チャット</title>
 
 <style>
+:root {
+  --bg-main: #f2f2f2;
+  --bg-header: #ffffff;
+  --bg-bot: #ffffff;
+  --bg-user: #d4f4d7;
+  --text-main: #111;
+  --border-color: #ddd;
+}
+
+/* 夜空モード */
+body.dark {
+  --bg-main: #0f1623;
+  --bg-header: #121c2b;
+  --bg-bot: #182233;
+  --bg-user: #1f3a4d;
+  --text-main: #e6f0ff;
+  --border-color: #24344a;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f2f2f2;
-  
+  background: var(--bg-main);
+  color: var(--text-main);
+
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -18,9 +38,9 @@ body {
 
 /* ===== Header ===== */
 #header {
-  background: #ffffff;
+  background: var(--bg-header);
   padding: 10px 12px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
   font-weight: bold;
 
   position: sticky;
@@ -62,13 +82,15 @@ body {
 }
 
 .me {
-  background: #d4f4d7;
+  background: var(--bg-user);
   margin-left: auto;
+  color: var(--text-main);
 }
 
 .bot {
-  background: #ffffff;
-  border: 1px solid #ddd;
+  background: var(--bg-bot);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
 }
 
 .timestamp {
@@ -86,8 +108,8 @@ body {
   right: 0;   /* ← 追加 */
   bottom: 0;
   width: auto;
-  background: #ffffff;
-  border-top: 1px solid #ddd;
+  background: var(--bg-header);
+  border-top: 1px solid var(--border-color);
   padding: 10px;
   box-sizing: border-box;
 
@@ -140,8 +162,8 @@ body {
   position: fixed;
   top:0; left:0; bottom:0;
   width: 260px;
-  background: #ffffff;
-  border-right: 1px solid #ddd;
+  background: var(--bg-header);
+  border-right: 1px solid var(--border-color);
   transform: translateX(-110%);
   transition: transform .2s ease;
   z-index: 50;
@@ -228,7 +250,8 @@ body {
 
 <div id="header">
   <button id="menuBtn" onclick="toggleSidebar()">☰</button>
-  <span>晴 - chat</span>
+  <span style="flex:1;">晴 - chat</span>
+  <button onclick="toggleDark()">🌙</button>
 </div>
 
 <div id="log"></div>
