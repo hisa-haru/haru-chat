@@ -10,7 +10,10 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background: #f2f2f2;
-  overflow-x: hidden;   /* ← 追加 */
+  
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
 }
 
 /* ===== Header ===== */
@@ -43,11 +46,10 @@ body {
 
 /* ===== Chat Log ===== */
 #log {
-  height: calc(100dvh - 120px);
+  flex: 1;
   overflow-y: auto;
   padding: 12px;
   box-sizing: border-box;
-  padding-bottom: 220px; /* 入力欄ぶん（JSでも補正） */
 }
 
 .msg {
