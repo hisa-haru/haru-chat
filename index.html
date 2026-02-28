@@ -44,6 +44,11 @@ body {
   height: 100dvh;
 }
 
+body:not(.dark) #inputArea {
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(6px);
+}
+
 /* ===== Header ===== */
 #header {
   background: var(--bg-header);
@@ -140,7 +145,7 @@ body.dark .timestamp {
   box-sizing: border-box;
 
   backdrop-filter: blur(10px);
-  background: rgba(15, 22, 35, 0.5);
+  background: rgba(15, 22, 35, 0.6);
 
   display: flex;
   gap: 8px;
@@ -333,5 +338,3 @@ body.dark #sessionsInSidebar button:hover {
 
 </body>
 </html>
-
-
