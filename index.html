@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>晴チャット</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-
   <style>
     :root{
       /* ===== Light (default) ===== */
@@ -49,7 +46,7 @@
 
     body{
       margin:0;
-      font-family: Inter, "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       color: var(--text-main);
 
       /* 背景：ライトは単色、ダークは夜空グラデ */
@@ -165,6 +162,11 @@
     }
     .timestamp.me{ text-align:right; }
     .timestamp.bot{ text-align:left; }
+	
+body.dark .timestamp {
+  color: rgba(230,240,255,0.25);
+}
+
 
     /* ===== Input Area ===== */
     #inputArea{
@@ -336,6 +338,17 @@
         width: calc(100% - 260px);
       }
     }
+	/* ここから追加 */
+
+body:not(.dark) .msg {
+  box-shadow: none;
+}
+
+body.dark .timestamp {
+  color: rgba(230,240,255,0.25);
+}
+
+/* ここで終了 */
   </style>
 </head>
 
