@@ -59,7 +59,7 @@ body {
 }
 
 .me {
-  background: #D9EFF9;
+  background: #d4f4d7;
   margin-left: auto;
 }
 
@@ -174,6 +174,25 @@ body {
     left: 260px;
     width: calc(100% - 260px);
   }
+  
+  .typing {
+  display: inline-block;
+  font-size: 14px;
+  color: #888;
+}
+
+.dot {
+  animation: blink 1.4s infinite both;
+}
+
+.dot:nth-child(2) { animation-delay: .2s; }
+.dot:nth-child(3) { animation-delay: .4s; }
+
+@keyframes blink {
+  0% { opacity: .2; }
+  20% { opacity: 1; }
+  100% { opacity: .2; }
+}
 }
 </style>
 </head>
@@ -267,6 +286,28 @@ function append(role, text, timestamp=null) {
   log.scrollTop = log.scrollHeight;
 }
 
+function showTyping() {
+  const log = document.getElementById("log");
+
+  const div = document.createElement("div");
+  div.className = "msg bot typing";
+  div.id = "typingIndicator";
+  div.innerHTML = `
+    晴が入力中
+    <span class="dot">.</span>
+    <span class="dot">.</span>
+    <span class="dot">.</span>
+  `;
+
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById("typingIndicator");
+  if (el) el.remove();
+}
+
 /* ===== 送信（Enterは改行。送信はボタンのみ） ===== */
 async function send() {
   const input = document.getElementById("msg");
@@ -275,6 +316,9 @@ async function send() {
 
   input.value = "";
   input.style.height = "auto";
+
+  append("user", text, Date.now());
+  showTyping();
 
   const res = await fetch(API_URL, {
     method: "POST",
@@ -287,7 +331,9 @@ async function send() {
 
   const data = await res.json();
 
+  // 🔥 ここで全部描き直す
   document.getElementById("log").innerHTML = "";
+
   if (data.messages) {
     messages = data.messages;
     messages.forEach(m => append(m.role, m.content, m.timestamp));
@@ -366,5 +412,3 @@ async function loadSessions() {
 
 </body>
 </html>
-
-
