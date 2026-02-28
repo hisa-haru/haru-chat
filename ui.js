@@ -22,6 +22,11 @@ function closeSidebar(){
   document.getElementById("sidebarOverlay").style.display = "none";
 }
 
+/* ===== ダークモード ===== */
+function toggleDark(){
+  document.body.classList.toggle("dark");
+}
+
 /* ===== 入力欄高さ自動調整 ===== */
 (function(){
   const msg = document.getElementById("msg");
