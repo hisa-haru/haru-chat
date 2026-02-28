@@ -1,4 +1,3 @@
-<script>
 const API_URL = "/api/chat";
 let messages = [];
 
@@ -220,4 +219,3 @@ async function loadSessions() {
     side.appendChild(btn);
   });
 }
-</script>
