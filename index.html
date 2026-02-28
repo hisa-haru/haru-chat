@@ -88,8 +88,7 @@ body {
   width: auto;
   background: #ffffff;
   border-top: 1px solid #ddd;
-  padding-left: 10px;
-  padding-right: calc(10px + env(safe-area-inset-right));
+  padding: 10px;
   box-sizing: border-box;
 
   display: flex;
@@ -123,6 +122,8 @@ body {
   cursor: pointer;
   flex: 0 0 auto;
   flex-shrink: 0;
+  display: block;
+  overflow: hidden;
 }
 
 #inputArea button:hover { opacity: 0.9; }
