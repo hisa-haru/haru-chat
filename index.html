@@ -7,10 +7,10 @@
 
 <style>
 :root {
-  --bg-main: #f2f2f2;
+  --bg-main: #f4f4f4;
   --bg-header: #ffffff;
   --bg-bot: #ffffff;
-  --bg-user: #d4f4d7;
+  --bg-user: #e8e8e8;
   --text-main: #111;
   --border-color: #ddd;
 }
@@ -26,7 +26,7 @@ body.dark {
 }
 
 body.dark .bot {
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.04);
 }
 
 body.dark .me {
@@ -116,7 +116,7 @@ body:not(.dark) .timestamp {
 
 /* ダーク用 */
 body.dark .timestamp {
-  color: #9fb3c8;
+  color: rgba(255,255,255,0.25);
 }
 
 .timestamp.me {
@@ -255,7 +255,7 @@ body.dark #sessionsInSidebar button:hover {
   #sidebarOverlay{ display:none !important; }
   #sidebar{
     transform: translateX(0);
-    z-index: 5;
+    z-index: 30;
   }
   #log{ margin-left: 260px; }
   #inputArea{
@@ -303,7 +303,7 @@ body.dark #sessionsInSidebar button:hover {
   <div id="sessionsInSidebar"></div>
   <div style="margin-top:10px;">
     <button onclick="newSession()">
-      ＋ New Session
+      ＋ 新しい対話
     </button>
   </div>
 </div>
