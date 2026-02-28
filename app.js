@@ -1,8 +1,11 @@
-const API_URL = "/api/chat";
+/* =========================
+   制御層 app.js
+   ========================= */
+
 let messages = [];
 
 /* =========================
-   送信処理（司令塔）
+   送信処理
    ========================= */
 async function send() {
 
@@ -12,7 +15,6 @@ async function send() {
   const text = input.value.trim();
   if (!text) return;
 
-  // 二重送信防止
   btn.disabled = true;
   btn.classList.add("loadingBtn");
   btn.textContent = "...";
@@ -25,34 +27,24 @@ async function send() {
 
   try {
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        mode: "chat",
-        messages: [{ role: "user", content: text }]
-      })
-    });
-
-    if (!res.ok) throw new Error("サーバーエラー");
-
-    const data = await res.json();
+    const data = await apiChat(text);
 
     hideTyping();
     clearLog();
 
     if (data.messages) {
       messages = data.messages;
-      messages.forEach(m => append(m.role, m.content, m.timestamp));
+      messages.forEach(m =>
+        append(m.role, m.content, m.timestamp)
+      );
     }
 
-    loadSessions();
+    await loadSessions();
 
   } catch (err) {
 
     hideTyping();
-
-    append("assistant", "通信エラーが発生しました。もう一度お試しください。");
+    append("assistant", "通信エラーが発生しました。");
 
   } finally {
 
@@ -68,15 +60,11 @@ async function send() {
    ========================= */
 async function newSession() {
 
-  await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode: "new" })
-  });
+  await apiNewSession();
 
   clearLog();
   closeSidebar();
-  loadSessions();
+  await loadSessions();
 }
 
 /* =========================
@@ -84,36 +72,26 @@ async function newSession() {
    ========================= */
 async function initialLoad() {
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode: "load" })
-  });
-
-  const data = await res.json();
+  const data = await apiLoad();
 
   if (data.messages) {
     messages = data.messages;
-    messages.forEach(m => append(m.role, m.content, m.timestamp));
+    messages.forEach(m =>
+      append(m.role, m.content, m.timestamp)
+    );
   }
 
-  loadSessions();
+  await loadSessions();
 }
 
 initialLoad();
 
 /* =========================
-   セッション一覧取得
+   セッション一覧
    ========================= */
 async function loadSessions() {
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode: "list" })
-  });
-
-  const data = await res.json();
+  const data = await apiListSessions();
 
   const side = document.getElementById("sessionsInSidebar");
   side.innerHTML = "";
@@ -129,20 +107,12 @@ async function loadSessions() {
 
     btn.onclick = async () => {
 
-      const res2 = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "switch",
-          sessionId: session.id
-        })
-      });
-
-      const data2 = await res2.json();
+      const data2 = await apiSwitchSession(session.id);
 
       clearLog();
 
       if (data2.messages) {
+        messages = data2.messages;
         data2.messages.forEach(m =>
           append(m.role, m.content, m.timestamp)
         );
