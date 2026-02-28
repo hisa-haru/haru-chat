@@ -191,6 +191,12 @@ body {
 .dot:nth-child(2) { animation-delay: .2s; }
 .dot:nth-child(3) { animation-delay: .4s; }
 
+.loadingBtn {
+  background: #999 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+}
+
 @keyframes blink {
   0% { opacity: .2; }
   20% { opacity: 1; }
@@ -314,9 +320,17 @@ function hideTyping() {
 
 /* ===== 送信（Enterは改行。送信はボタンのみ） ===== */
 async function send() {
+
   const input = document.getElementById("msg");
+  const btn = document.querySelector("#inputArea button");
+
   const text = input.value.trim();
   if (!text) return;
+
+  // 二重送信防止
+  btn.disabled = true;
+  btn.classList.add("loadingBtn");
+  btn.textContent = "...";
 
   input.value = "";
   input.style.height = "auto";
@@ -324,26 +338,56 @@ async function send() {
   append("user", text, Date.now());
   showTyping();
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      mode: "chat",
-      messages: [{ role: "user", content: text }]
-    })
-  });
+  try {
 
-  const data = await res.json();
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "chat",
+        messages: [{ role: "user", content: text }]
+      })
+    });
 
-  // 🔥 ここで全部描き直す
-  document.getElementById("log").innerHTML = "";
+    if (!res.ok) {
+      throw new Error("サーバーエラー");
+    }
 
-  if (data.messages) {
-    messages = data.messages;
-    messages.forEach(m => append(m.role, m.content, m.timestamp));
+    const data = await res.json();
+
+    document.getElementById("log").innerHTML = "";
+
+    if (data.messages) {
+      messages = data.messages;
+      messages.forEach(m => append(m.role, m.content, m.timestamp));
+    }
+
+    loadSessions();
+
+  } catch (err) {
+
+    // 🔥 エラー表示
+    hideTyping();
+
+    const log = document.getElementById("log");
+    const errorDiv = document.createElement("div");
+    errorDiv.className = "msg bot";
+    errorDiv.style.background = "#ffe5e5";
+    errorDiv.style.border = "1px solid #ff9999";
+    errorDiv.textContent = "通信エラーが発生しました。もう一度お試しください。";
+
+    log.appendChild(errorDiv);
+    log.scrollTop = log.scrollHeight;
+
+  } finally {
+
+    // ボタン復帰
+    btn.disabled = false;
+    btn.classList.remove("loadingBtn");
+    btn.textContent = "➤";
+
   }
 
-  loadSessions();
 }
 
 /* ===== 新規セッション ===== */
