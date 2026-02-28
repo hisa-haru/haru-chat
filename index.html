@@ -181,6 +181,12 @@ body {
   color: #888;
 }
 
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .dot {
   animation: blink 1.4s infinite both;
 }
@@ -286,6 +292,7 @@ function append(role, text, timestamp=null) {
   log.scrollTop = log.scrollHeight;
 }
 
+/* ===== 送信中・・・表示 ===== */
 function showTyping() {
   const log = document.getElementById("log");
 
