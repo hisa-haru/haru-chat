@@ -1,355 +1,368 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
-<title>晴チャット</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>晴チャット</title>
 
-<style>
-:root {
-  --bg-main: #f4f4f4;
-  --bg-header: #ffffff;
-  --bg-bot: #ffffff;
-  --bg-user: #e8e8e8;
-  --text-main: #111;
-  --border-color: #ddd;
-}
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 
-/* 夜空モード */
-body.dark {
-  --bg-main: #0f1623;
-  --bg-header: #121c2b;
-  --bg-bot: #182233;
-  --bg-user: #1f3a4d;
-  --text-main: #e6f0ff;
-  --border-color: #24344a;
+  <style>
+    :root{
+      /* ===== Light (default) ===== */
+      --bg-main: #f4f4f4;
+      --bg-header: rgba(255,255,255,0.92);
+      --bg-bot: #ffffff;
+      --bg-user: #e9e9e9;
 
-  background: linear-gradient(
-    to bottom,
-    #0f1c2e,
-    #0c1624 40%,
-    #0a1320
-  );
-}
+      --text-main: #111;
+      --text-sub: rgba(17,17,17,0.55);
 
-body.dark .bot {
-  border: 1px solid rgba(255,255,255,0.04);
-}
+      --border-color: rgba(0,0,0,0.10);
 
-body.dark .me {
-  border: none;
-}
+      --shadow-soft: 0 6px 18px rgba(0,0,0,0.06);
+      --shadow-bubble: 0 4px 14px rgba(0,0,0,0.08);
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg-main);
-  color: var(--text-main);
+      --input-bg: rgba(255,255,255,0.70);
+      --input-border: rgba(0,0,0,0.12);
+    }
 
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-}
+    body.dark{
+      /* ===== Dark (night sky) ===== */
+      --bg-main: #0f1623;
+      --bg-header: rgba(18,28,43,0.82);
+      --bg-bot: #182233;
+      --bg-user: #1f3a4d;
 
+      --text-main: #e6f0ff;
+      --text-sub: rgba(230,240,255,0.40);
 
-/* ===== Header ===== */
-#header {
-  background: var(--bg-header);
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border-color);
-  font-weight: bold;
+      --border-color: rgba(255,255,255,0.08);
 
-  position: sticky;
-  top: 0;
-  z-index: 20;
+      --shadow-soft: 0 10px 26px rgba(0,0,0,0.35);
+      --shadow-bubble: 0 6px 18px rgba(0,0,0,0.28);
 
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+      --input-bg: rgba(15,22,35,0.58);
+      --input-border: rgba(255,255,255,0.10);
+    }
 
-#menuBtn{
-  display: inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size: 22px;
-  width: 44px;
-  height: 44px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
+    body{
+      margin:0;
+      font-family: Inter, "Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-main);
 
-/* ===== Chat Log ===== */
-#log {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-  box-sizing: border-box;
-}
+      /* 背景：ライトは単色、ダークは夜空グラデ */
+      background: var(--bg-main);
+      display:flex;
+      flex-direction:column;
+      height:100dvh;
+    }
 
-.msg {
-  font-weight: 400;
-  margin: 8px 0;
-  padding: 10px 14px;
-  border-radius: 14px;
-  max-width: 80%;
-  white-space: pre-wrap;
-  line-height: 1.5;
-}
+    body.dark{
+      background: linear-gradient(
+        to bottom,
+        #0f1c2e 0%,
+        #0c1624 45%,
+        #0a1320 100%
+      );
+    }
 
-.me {
-  background: var(--bg-user);
-  margin-left: auto;
-  color: var(--text-main);
-  font-weight: 500;
-}
+    /* ===== Header ===== */
+    #header{
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 12px;
 
-.bot {
-  background: var(--bg-bot);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  font-weight: 400;
-}
+      position: sticky;
+      top: 0;
+      z-index: 40;
 
-.timestamp {
-  font-size: 10px;
-  margin: 2px 12px;
-  background: transparent;
-  border: none;
-  opacity: 0.4;
-}
+      display:flex;
+      align-items:center;
+      gap: 8px;
 
-/* ライト用 */
-body:not(.dark) .timestamp {
-  color: #666;
-}
+      backdrop-filter: blur(10px);
+    }
 
-/* ダーク用 */
-body.dark .timestamp {
-  color: rgba(255,255,255,0.25);
-}
+    #menuBtn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 22px;
+      width:44px;
+      height:44px;
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      color: var(--text-main);
+    }
 
-.timestamp.me {
-  text-align: right;
-}
+    #title{
+      flex: 1;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
 
-.timestamp.bot {
-  text-align: left;
-}
+    #darkBtn{
+      width:44px;
+      height:44px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: rgba(255,255,255,0.06);
+      color: var(--text-main);
+      cursor: pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    body:not(.dark) #darkBtn{ background: rgba(0,0,0,0.04); }
 
-/* ===== Input Area ===== */
-#inputArea {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 10px;
-  box-sizing: border-box;
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  }
- 
- /* ライト用 */
-  body:not(.dark) #inputArea {
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(6px);
-  border-top: 1px solid var(--border-color);
-}
-/* ダーク用 */
-body.dark #inputArea {
-  background: rgba(15, 22, 35, 0.6);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
+    /* ===== Chat Log ===== */
+    #log{
+      flex:1;
+      overflow-y:auto;
+      padding: 12px;
+      box-sizing:border-box;
+    }
 
-#msg {
-  flex: 1;
-  min-height: 80px;
-  max-height: 160px;
-  resize: none;
-  overflow-y: auto;
-  padding: 12px;
-  
-  background: var(--bg-bot);
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-  border-radius: 22px;      /* ← 角丸を戻す */
+    .msg{
+      margin: 8px 0;
+      padding: 12px 14px;
+      border-radius: 18px;
+      max-width: 84%;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      box-shadow: var(--shadow-bubble);
+    }
 
-  box-sizing: border-box;
-  font-size: 16px;
-}
+    .me{
+      background: var(--bg-user);
+      margin-left:auto;
+      font-weight: 600;  /* ひさ側少し太く */
+    }
 
-/* ダーク専用 */
-body.dark #msg {
-  background: #162132;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-}
+    .bot{
+      background: var(--bg-bot);
+      border: 1px solid var(--border-color);
+      font-weight: 500;
+    }
 
-#msg::placeholder {
-  color: rgba(230, 240, 255, 0.4);
-}
+    /* さらに夜空モードは輪郭を薄く */
+    body.dark .bot{
+      border: 1px solid rgba(255,255,255,0.05);
+    }
 
-/* 送信ボタン（丸アイコン） */
-#inputArea button {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: #10a37f;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-  
-  flex: 0 0 auto;
-}
+    /* ===== Timestamp (箱を消して、数字だけ) ===== */
+    .timestamp{
+      font-size: 10px;
+      margin: 2px 12px;
+      background: transparent;
+      border: none;
+      opacity: 0.9;
+      color: var(--text-sub);
+      letter-spacing: 0.2px;
+    }
+    .timestamp.me{ text-align:right; }
+    .timestamp.bot{ text-align:left; }
 
-#inputArea button:hover { opacity: 0.9; }
+    /* ===== Input Area ===== */
+    #inputArea{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
 
-/* ===== Sidebar (sessions) ===== */
-#sidebarOverlay{
-  display:none;
-  position: fixed;
-  top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.3);
-  z-index: 40;
-}
+      padding: 10px;
+      box-sizing: border-box;
+      display:flex;
+      gap: 8px;
+      align-items:flex-end;
 
-#sidebar{
-  position: fixed;
-  top:0; left:0; bottom:0;
-  width: 260px;
-  background: var(--bg-header);
-  border-right: 1px solid var(--border-color);
-  transform: translateX(-110%);
-  transition: transform .2s ease;
-  z-index: 50;
-  padding: 10px;
-  box-sizing: border-box;
-}
+      background: var(--input-bg);
+      border-top: 1px solid var(--input-border);
+      backdrop-filter: blur(12px);
+      z-index: 30;
+    }
 
-#sidebar.open{ transform: translateX(0); }
+    #msg{
+      flex:1;
+      min-height: 64px;
+      max-height: 160px;
+      resize:none;
+      overflow-y:auto;
+      padding: 12px 14px;
 
-#sidebar .title{
-  font-weight: bold;
-  margin: 6px 0 10px 0;
-}
+      background: rgba(255,255,255,0.85);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 22px;
 
-#sidebar > button {
-  width: 100%;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-bot);
-  color: var(--text-main);
-  cursor: pointer;
-}
+      box-sizing:border-box;
+      font-size: 16px;
+      outline: none;
+    }
 
-#sessionsInSidebar button{
-  width: 100%;
-  text-align: left;
-  padding: 10px;
-  margin: 6px 0;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-bot);
-  cursor: pointer;
-  color: var(--text-main);
-}
+    body.dark #msg{
+      background: rgba(22,33,50,0.95);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
 
-/* ダーク専用 */
-body.dark #sessionsInSidebar button {
-  background: #162132;
-}
+    #msg::placeholder{
+      color: var(--text-sub);
+    }
 
-body.dark #sessionsInSidebar button:hover {
-  background: #1d2a3f;
-}
+    #sendBtn{
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: #10a37f;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      box-shadow: var(--shadow-soft);
+    }
+    #sendBtn:hover{ opacity: 0.9; }
 
-#sessionsInSidebar button:hover {
-  background: #1d2a3f;
-}
+    .loadingBtn{
+      background:#999 !important;
+      cursor:not-allowed !important;
+      opacity:0.7;
+    }
 
-/* PCではサイドバー常時表示 */
-@media (min-width: 768px){
-  #sidebarOverlay{ display:none !important; }
-  #sidebar{
-    transform: translateX(0);
-    z-index: 30;
-  }
-  #header {
-    margin-left: 260px;
-  }
-  #log{ margin-left: 260px; }
-  #inputArea{
-    left: 260px;
-    width: calc(100% - 260px);
-  }
-}
+    /* ===== Typing ===== */
+    .typing{
+      display:flex;
+      align-items:center;
+      gap:4px;
+      font-size:14px;
+      color: var(--text-sub);
+      box-shadow:none;
+      border:none;
+      background: transparent;
+      padding: 6px 8px;
+    }
+    .dot{ animation: blink 1.4s infinite both; }
+    .dot:nth-child(2){ animation-delay: .2s; }
+    .dot:nth-child(3){ animation-delay: .4s; }
+    @keyframes blink{
+      0%{ opacity:.2; }
+      20%{ opacity:1; }
+      100%{ opacity:.2; }
+    }
 
-.typing {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: #888;
-}
+    /* ===== Sidebar ===== */
+    #sidebarOverlay{
+      display:none;
+      position:fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.35);
+      z-index: 50;
+    }
 
-.dot {
-  animation: blink 1.4s infinite both;
-}
+    #sidebar{
+      position: fixed;
+      top:0; left:0; bottom:0;
+      width:260px;
+      background: var(--bg-header);
+      border-right: 1px solid var(--border-color);
+      transform: translateX(-110%);
+      transition: transform .2s ease;
+      z-index: 60;
+      padding: 14px 10px;
+      box-sizing:border-box;
+      backdrop-filter: blur(12px);
+    }
+    #sidebar.open{ transform: translateX(0); }
 
-.dot:nth-child(2) { animation-delay: .2s; }
-.dot:nth-child(3) { animation-delay: .4s; }
+    #sidebar .title{
+      font-weight: 800;
+      margin: 6px 0 10px 2px;
+      color: var(--text-main);
+    }
 
-.loadingBtn {
-  background: #999 !important;
-  cursor: not-allowed !important;
-  opacity: 0.7;
-}
+    #sessionsInSidebar button{
+      width:100%;
+      text-align:left;
+      padding: 10px 12px;
+      margin: 6px 0;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: rgba(255,255,255,0.06);
+      cursor:pointer;
+      color: var(--text-main);
+      box-shadow: none;
+    }
 
-@keyframes blink {
-  0% { opacity: .2; }
-  20% { opacity: 1; }
-  100% { opacity: .2; }
-}
+    body.dark #sessionsInSidebar button{
+      background: rgba(22,33,50,0.80);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
 
-</style>
+    #sessionsInSidebar button:hover{
+      filter: brightness(1.05);
+    }
+
+    #newSessionBtn{
+      width: 100%;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--border-color);
+      background: rgba(255,255,255,0.10);
+      color: var(--text-main);
+      cursor:pointer;
+      margin-top: 10px;
+    }
+    body.dark #newSessionBtn{
+      background: rgba(22,33,50,0.65);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    /* ===== Desktop layout ===== */
+    @media (min-width: 768px){
+      #sidebarOverlay{ display:none !important; }
+      #sidebar{
+        transform: translateX(0);
+        z-index: 60;
+      }
+      #header, #log{
+        margin-left: 260px;
+      }
+      #inputArea{
+        left: 260px;
+        width: calc(100% - 260px);
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-<div id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-<div id="sidebar">
-  <div class="title">セッション一覧</div>
-  <div id="sessionsInSidebar"></div>
-  <div style="margin-top:10px;">
-    <button onclick="newSession()">
-      ＋ 新しい対話
-    </button>
+  <div id="sidebar">
+    <div class="title">セッション一覧</div>
+    <div id="sessionsInSidebar"></div>
+    <button id="newSessionBtn" onclick="newSession()">＋ 新しい対話</button>
   </div>
-</div>
 
-<div id="header">
-  <button id="menuBtn" onclick="toggleSidebar()">☰</button>
-  <span style="flex:1;">晴 - chat</span>
-  <button onclick="toggleDark()">🌙</button>
-</div>
+  <div id="header">
+    <button id="menuBtn" onclick="toggleSidebar()">☰</button>
+    <div id="title">晴 - chat</div>
+    <button id="darkBtn" onclick="toggleDark()" title="Dark mode">🌙</button>
+  </div>
 
-<div id="log"></div>
+  <div id="log"></div>
 
-<div id="inputArea">
-  <textarea id="msg" placeholder="ひさの言葉…"></textarea>
-  <button id="sendBtn" onclick="send()">➤</button>
-</div>
+  <div id="inputArea">
+    <textarea id="msg" placeholder="ひさの言葉…"></textarea>
+    <button id="sendBtn" onclick="send()">➤</button>
+  </div>
 
-<script src="ui.js"></script>
-<script src="api.js"></script>
-<script src="app.js"></script>
-
+  <script src="ui.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
