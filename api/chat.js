@@ -203,7 +203,7 @@ ${toneInstruction}
         },
         body: JSON.stringify({
           model: "gpt-4.1-mini",
-          temperature: 0.6 + (safeWarmth / 100) * 0.8　　// ← 追加
+          temperature: 0.6 + (safeWarmth / 100) * 0.8,
           top_p: safeWarmth > 80 ? 1 : 0.9,
           input: [
             { role: "system", content: systemPrompt },
@@ -241,6 +241,7 @@ ${toneInstruction}
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
 
 
 
