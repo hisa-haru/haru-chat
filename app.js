@@ -97,6 +97,9 @@ async function loadSessions() {
   const data = await apiListSessions();
 
   const side = document.getElementById("sessionsInSidebar");
+
+  if (!side) return;   // ← これ追加 
+   
   side.innerHTML = "";
 
   if (!data.sessions) return;
