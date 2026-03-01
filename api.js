@@ -10,14 +10,21 @@ async function apiChat(text, warmth = 60) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       mode: "chat",
-      warmth,  // ← 追加
+      warmth,
       messages: [{ role: "user", content: text }]
     })
   });
 
-  if (!res.ok) throw new Error("chat failed");
+  const raw = await res.text();
 
-  return await res.json();
+  console.log("RAW RESPONSE:", raw);
+
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error("JSON parse failed", e);
+    throw new Error("JSON parse failed");
+  }
 }
 
 async function apiNewSession() {
