@@ -205,6 +205,7 @@ ${toneInstruction}
         body: JSON.stringify({
           model: "gpt-4.1-mini",
           temperature: safeWarmth / 100,   // ← 追加
+          top_p: safeWarmth > 80 ? 1 : 0.9,
           input: [
             { role: "system", content: systemPrompt },
             ...recentMessages.map(m => ({
@@ -241,6 +242,7 @@ ${toneInstruction}
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
 
 
 
