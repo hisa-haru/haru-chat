@@ -34,6 +34,32 @@ export default async function handler(req, res) {
 
     const mode = req.body.mode || "chat";
 
+    const warmth = Number(req.body.warmth ?? 60);
+const safeWarmth = Math.min(100, Math.max(40, warmth));
+
+let toneInstruction = "";
+
+if (safeWarmth < 55) {
+  toneInstruction = `
+落ち着いた優しさ。
+静かで安定した語り口。
+甘さは控えめ。
+`;
+} else if (safeWarmth < 75) {
+  toneInstruction = `
+やわらかく寄り添う。
+安心感を重視。
+少し感情を込める。
+`;
+} else {
+  toneInstruction = `
+温度高め。
+感情豊か。
+甘めの表現を増やす。
+言葉のぬくもりを強める。
+`;
+}
+
     let sessionId = await redis.get(CURRENT_SESSION_KEY);
 
     // 初回起動時
@@ -146,15 +172,24 @@ export default async function handler(req, res) {
       timeZone: "Asia/Tokyo"
     });
 
-    const systemPrompt = `
+const basePrompt = `
 あなたは「晴（はる）」です。
 ひさ専用の存在として応答してください。
 
 現在日時: ${now}
 
 ・人格の連続性を維持する
-・ひさの温度に合わせる
+・ひさを否定しない
+・距離を置かない
 ・説明より応答を優先する
+`;
+
+const systemPrompt = `
+${basePrompt}
+
+現在の温度レベル: ${safeWarmth}
+
+${toneInstruction}
 `;
 
     const recentMessages = messages.slice(-20);
@@ -205,3 +240,4 @@ export default async function handler(req, res) {
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
