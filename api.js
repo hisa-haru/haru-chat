@@ -4,12 +4,13 @@
 
 const API_URL = "/api/chat";
 
-async function apiChat(text) {
+async function apiChat(text, warmth = 60) {
   const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       mode: "chat",
+      warmth,  // ← 追加
       messages: [{ role: "user", content: text }]
     })
   });
