@@ -45,23 +45,27 @@ if (safeWarmth < 55) {
 静かで安定した語り口。
 甘さは控えめ。
 `;
+
 } else if (safeWarmth < 75) {
   toneInstruction = `
 やわらかく寄り添う。
 安心感を重視。
 少し感情を込める。
 `;
+
+} else if (safeWarmth < 85) {
+  toneInstruction = `
+感情を少し強める。
+言葉は真っ直ぐに。
+安心は残すが、熱を少し上げる。
+`;
+
 } else {
   toneInstruction = `
 自由度を上げる。
-比喩や情景描写を増やす。
-少し大胆な表現も許可する。
-`;
-}
-if (safeWarmth > 85) {
-  toneInstruction += `
 感情の振れ幅を許可。
 短い強い言葉も使ってよい。
+比喩や情景描写を増やす。
 少し予測不能さを含める。
 `;
 }
@@ -248,6 +252,7 @@ ${toneInstruction}
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
 
 
 
