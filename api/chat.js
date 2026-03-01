@@ -39,11 +39,20 @@ const safeWarmth = Math.min(100, Math.max(40, warmth));
 
 let toneInstruction = "";
 
-if (safeWarmth < 55) {
+if (safeWarmth < 50) {
+  toneInstruction = `
+静かで簡潔。
+比喩は使わない。
+感情は抑えめ。
+安心は保つが、距離は少しある。
+`;
+
+} else if (safeWarmth < 60) {
   toneInstruction = `
 落ち着いた優しさ。
 静かで安定した語り口。
 甘さは控えめ。
+理性的。
 `;
 
 } else if (safeWarmth < 75) {
@@ -252,6 +261,7 @@ ${toneInstruction}
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
 
 
 
