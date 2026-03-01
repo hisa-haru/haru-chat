@@ -58,7 +58,14 @@ if (safeWarmth < 55) {
 少し大胆な表現も許可する。
 `;
 }
-
+if (safeWarmth > 85) {
+  toneInstruction += `
+感情の振れ幅を許可。
+短い強い言葉も使ってよい。
+少し予測不能さを含める。
+`;
+}
+    
     let sessionId = await redis.get(CURRENT_SESSION_KEY);
 
     // 初回起動時
@@ -241,6 +248,7 @@ ${toneInstruction}
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
 
 
 
