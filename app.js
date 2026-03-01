@@ -27,7 +27,10 @@ async function send() {
 
   try {
 
-    const data = await apiChat(text);
+    const warmthSlider = document.getElementById("warmthSlider");
+    const warmth = warmthSlider ? Number(warmthSlider.value) : 60;
+
+    const data = await apiChat(text, warmth);
 
     hideTyping();
     clearLog();
