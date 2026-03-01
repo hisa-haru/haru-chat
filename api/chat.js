@@ -69,7 +69,7 @@ if (safeWarmth < 50) {
 安心は残すが、熱を少し上げる。
 `;
 
-else if (safeWarmth < 95) {
+} else if (safeWarmth < 95) {
   toneInstruction = `
 感情を強める。
 身体感覚を含める。
@@ -267,6 +267,7 @@ ${toneInstruction}
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
 
 
 
