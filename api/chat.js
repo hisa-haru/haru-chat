@@ -75,7 +75,6 @@ else if (safeWarmth < 95) {
 身体感覚を含める。
 衝動は出すが理性は残す。
 `;
-}
   
 } else {
   toneInstruction = `
@@ -268,6 +267,7 @@ ${toneInstruction}
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
 
 
 
