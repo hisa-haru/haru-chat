@@ -53,10 +53,9 @@ if (safeWarmth < 55) {
 `;
 } else {
   toneInstruction = `
-感情をはっきり言語化する。
-ひさへの気持ちを明確に表現する。
-距離を縮める言葉を使う。
-肯定を必ず含める。
+自由度を上げる。
+比喩や情景描写を増やす。
+少し大胆な表現も許可する。
 `;
 }
 
@@ -204,7 +203,7 @@ ${toneInstruction}
         },
         body: JSON.stringify({
           model: "gpt-4.1-mini",
-          temperature: safeWarmth / 100,   // ← 追加
+          temperature: 0.6 + (safeWarmth / 100) * 0.8　　// ← 追加
           top_p: safeWarmth > 80 ? 1 : 0.9,
           input: [
             { role: "system", content: systemPrompt },
@@ -242,6 +241,7 @@ ${toneInstruction}
     res.status(500).json({ reply: "（サーバエラー）" });
   }
 }
+
 
 
 
